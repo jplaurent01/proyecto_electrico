@@ -29,17 +29,20 @@ customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
 def win_disp(root):
+    #Se configura la ventana
     WIDTH = 780
     HEIGHT = 520
     win = Toplevel(root)
-    win.title("CustomTkinter complex_example.py")
+    win.title("Procesador de datos glucosa")
     win.geometry(f"{WIDTH}x{HEIGHT}")
     win.configure(bg="#161E29")
     win.grid_columnconfigure(1, weight=1)
     win.grid_rowconfigure(0, weight=1)
 
+    #Se agrega una barra de menu en la esquina superior izquierda
     menubar = Menu(win)
     filemenu = Menu(menubar, tearoff=0)
+
     #Se procede a abrir el archivo csv
     buttons0 = []  # list to store the created buttons
     filemenu.add_command(label="Abrir Archivo", command=lambda:Onadd(win, buttons0))
@@ -47,16 +50,18 @@ def win_disp(root):
     filemenu.add_command(label="Salir", command=win.destroy)
     menubar.add_cascade(label="Menu de opciones", menu=filemenu)
     win.config(menu=menubar)
+
+    #Configuración del aspecto estetico de la ventana
     win.frame_left = customtkinter.CTkFrame(master=win,
                                                  width=180,
                                                  corner_radius=0)
     win.frame_left.grid(row=0, column=0, sticky="nswe")
     win.frame_right = customtkinter.CTkFrame(master=win)
     win.frame_right.grid(row=0, column=1, sticky="nswe", padx=20, pady=20)
-    win.frame_left.grid_rowconfigure(0, minsize=10)   # empty row with minsize as spacing
-    win.frame_left.grid_rowconfigure(5, weight=1)  # empty row as spacing
-    win.frame_left.grid_rowconfigure(8, minsize=20)    # empty row with minsize as spacing
-    win.frame_left.grid_rowconfigure(11, minsize=10)  # empty row with minsize as spacing
+    win.frame_left.grid_rowconfigure(0, minsize=10)
+    win.frame_left.grid_rowconfigure(5, weight=1)
+    win.frame_left.grid_rowconfigure(8, minsize=20)
+    win.frame_left.grid_rowconfigure(11, minsize=10)
     win.frame_right.rowconfigure((0, 1, 2, 3), weight=1)
     win.frame_right.rowconfigure(7, weight=10)
     win.frame_right.columnconfigure((0, 1), weight=1)
@@ -80,7 +85,7 @@ def create_file():
         ('text files', '*.csv'),
         ('All files', '*.*')
     )
-    # show the open file dialog
+    # Pide abrir el archivo
     f = fd.askopenfile(filetypes=filetypes)
     try:
         name = os.path.abspath(f.name)
@@ -91,11 +96,12 @@ def create_file():
         name = ""
         return flag, name #retorna un booleano si se encontró y el nombre.
 
+#Cuando se abre la barra de menu y se presiona abrir archivo se ejecuta este bloque
 def Onadd(win, buttons0):
     if len(buttons0) == 0:
         pass
     else:
-        # remove all buttons (note that they are not destroyed) stored in the list
+        # Remueve los botones de los paciente creados
         for b in buttons0:
             b.grid_forget()
     #Variable aux contiene nombre del archivo y booleano
@@ -107,9 +113,11 @@ def Onadd(win, buttons0):
             #Siele archivo se pudo leer, ejecuta
             if lst_aux[2] == True:
                 Text_file = aux[1]
+
+                #Se agregan etiquetas y botones de pacientes
                 label_1 = customtkinter.CTkLabel(master=win.frame_left,
                                                              text="Cantidad de pacientes",
-                                                             text_font=("Roboto Medium", -16))  # font name and size in px
+                                                             text_font=("Roboto Medium", -16))
                 label_1.grid(row=1, column=0, pady=10, padx=10)
 
                 entry = customtkinter.CTkEntry(master=win.frame_left,
@@ -139,19 +147,19 @@ def greater(test_list):
         else:
             Flag =False
             break
-
     return Flag
 
 #Crea una ventana que pregunta cuantos rangos se van a crear
 def create_window(root,lst_aux, Text_file):
-
+    #Configuración de la ventana
     WIDTH = 780
     HEIGHT = 520
     win = Toplevel(root)
-    win.title("CustomTkinter complex_example.py")
+    win.title("Procesador de datos glucosa")
     win.geometry(f"{WIDTH}x{HEIGHT}")
     win.configure(bg="#161E29")
 
+    #Configuración del aspecto estético de la ventana
     win.grid_columnconfigure(1, weight=1)
     win.grid_rowconfigure(0, weight=1)
     win.frame_left = customtkinter.CTkFrame(master=win,
@@ -160,10 +168,10 @@ def create_window(root,lst_aux, Text_file):
     win.frame_left.grid(row=0, column=0, sticky="nswe")
     win.frame_right = customtkinter.CTkFrame(master=win)
     win.frame_right.grid(row=0, column=1, sticky="nswe", padx=20, pady=20)
-    win.frame_left.grid_rowconfigure(0, minsize=10)   # empty row with minsize as spacing
-    win.frame_left.grid_rowconfigure(5, weight=1)  # empty row as spacing
-    win.frame_left.grid_rowconfigure(8, minsize=20)    # empty row with minsize as spacing
-    win.frame_left.grid_rowconfigure(11, minsize=10)  # empty row with minsize as spacing
+    win.frame_left.grid_rowconfigure(0, minsize=10)
+    win.frame_left.grid_rowconfigure(5, weight=1)
+    win.frame_left.grid_rowconfigure(8, minsize=20)
+    win.frame_left.grid_rowconfigure(11, minsize=10)
     win.frame_right.rowconfigure((0, 1, 2, 3), weight=1)
     win.frame_right.rowconfigure(7, weight=10)
     win.frame_right.columnconfigure((0, 1), weight=1)
@@ -173,6 +181,7 @@ def create_window(root,lst_aux, Text_file):
     win.frame_info.rowconfigure(0, weight=1)
     win.frame_info.columnconfigure(0, weight=1)
 
+    #Estas lstas almacenan botones y etiquetas que serán borrados cada vez que se actualizan datos de la ventana
     btn_windows = []
     lbl_windows = []
     btn_graph = []
@@ -181,9 +190,10 @@ def create_window(root,lst_aux, Text_file):
     lbl_cp = []
     button_identities = []
 
+    #Se agregan entradas de txto
     label_1 = customtkinter.CTkLabel(master=win.frame_left,
                                                  text="Cantidad de rangos de tiempo del paciente",
-                                                 text_font=("Roboto Medium", -16))  # font name and size in px
+                                                 text_font=("Roboto Medium", -16))
     label_1.grid(row=2, column=0, columnspan=1, pady=10, padx=10)
 
     entry = customtkinter.CTkEntry(master=win.frame_left,
@@ -193,7 +203,7 @@ def create_window(root,lst_aux, Text_file):
 
     label_2 = customtkinter.CTkLabel(master=win.frame_left,
                                                  text="Nombre del paciente",
-                                                 text_font=("Roboto Medium", -16))  # font name and size in px
+                                                 text_font=("Roboto Medium", -16))
     label_2.grid(row=0, column=0, columnspan=1, pady=10, padx=10)
 
     entry2 = customtkinter.CTkEntry(master=win.frame_left,
@@ -201,6 +211,7 @@ def create_window(root,lst_aux, Text_file):
                                             placeholder_text="Ingrese un nombre o identificación")
     entry2.grid(row=1, column=0, columnspan=1, pady=20, padx=20, sticky="we")
 
+    #Se lee el archivo .csv
     lst = dt.read_file(Text_file)
     id_sensor = list(dict.fromkeys(lst[1]))
     combobox_1 = customtkinter.CTkComboBox(master=win.frame_left,
@@ -218,7 +229,7 @@ def show_window(num, lst_aux, Text_file,root, buttons0):
     if len(buttons0) == 0:
         pass
     else:
-        # remove all buttons (note that they are not destroyed) stored in the list
+        # Remueve botones del paciente
         for b in buttons0:
             b.grid_forget()
 
@@ -245,6 +256,7 @@ def show_window(num, lst_aux, Text_file,root, buttons0):
 
 
 def date_and_hour(root, year_imp, month_imp, day_imp, h_imp, m_imp, index,button_identities):
+    #Se configura ventana
     import datetime
     ws = Toplevel(root)
     ws.geometry("500x400")
@@ -274,28 +286,34 @@ def date_and_hour(root, year_imp, month_imp, day_imp, h_imp, m_imp, index,button
         h = int(h)
         x = datetime.datetime(ano, mes, dia, m, h)
         total_date = x.strftime("%m-%d-%Y %I:%M %p")
+        #Se lmacena la fecha introducida
         n_array.append(total_date)
         i_array.append(index)
+        #Se agrea la fecha introducida en el botón de la ventana principal
         bname = (button_identities[index])
         bname.configure(text = total_date)
         ws.destroy()
 
+    #Se configura formato de horas
     if last_value == "59" and min_string.get() == "0":
         hour_string.set(int(hour_string.get())+1 if hour_string.get() !="23" else 0)
         last_value = min_string.get()
 
+    #Configura formato de minutos
     if last_value_sec == "59" and sec_hour.get() == "0":
         min_string.set(int(min_string.get())+1 if min_string.get() !="59" else 0)
     if last_value == "59":
         hour_string.set(int(hour_string.get())+1 if hour_string.get() !="23" else 0)
         last_value_sec = sec_hour.get()
 
+    #Estos frames se crean para posicionar la selección de las horas y minutos
     fone = Frame(ws.frame_info)
     ftwo = Frame(ws.frame_info)
 
     fone.pack(pady=10)
     ftwo.pack(pady=10)
 
+    #Este bloque indica el número del botón selecionado,para ingresar las fechas de manera ordenada
     if index == 0:
         text010 = "Fecha Inicial # {0}".format(1)
     elif index == 1:
@@ -322,6 +340,7 @@ def date_and_hour(root, year_imp, month_imp, day_imp, h_imp, m_imp, index,button
                                           text_font=("Roboto Medium", -20))
     date_frame.pack()
 
+    #Se crea un calendario
     cal = Calendar(
         fone,
         selectmode="day",
@@ -331,6 +350,7 @@ def date_and_hour(root, year_imp, month_imp, day_imp, h_imp, m_imp, index,button
         )
     cal.pack()
 
+    #Se crea una caja para la selección de minutos
     min_sb = Spinbox(
         ftwo,
         from_=0,
@@ -342,6 +362,7 @@ def date_and_hour(root, year_imp, month_imp, day_imp, h_imp, m_imp, index,button
         font=f,
         justify=CENTER
         )
+    #Objeto selección de horas
     sec_hour = Spinbox(
         ftwo,
         from_=0,
@@ -349,6 +370,7 @@ def date_and_hour(root, year_imp, month_imp, day_imp, h_imp, m_imp, index,button
         wrap=True,
         textvariable=min_string,
         font=f,
+        state="readonly",
         width=2,
         justify=CENTER
         )
@@ -377,7 +399,7 @@ def show_dateentry(num, win,lst_aux,Text_file, entry2, btn_windows, lbl_windows,
     if len(btn_windows) == 0 and len(lbl_windows) == 0 and len(btn_graph) == 0 and len(btn_dwn) == 0 and len(lbl_disp) == 0 and len(lbl_cp) == 0:
         pass
     else:
-        # remove all buttons (note that they are not destroyed) stored in the list
+        # Se remueven etiquetas y botones
         for b in btn_windows:
             b.grid_forget()
         for b in lbl_windows:
@@ -398,6 +420,7 @@ def show_dateentry(num, win,lst_aux,Text_file, entry2, btn_windows, lbl_windows,
                 if num <= 10:
                     if num!=0 and (num % 2) == 0:
                         for i in range(num):
+                            #Se configura el indice y posición de los botones
                             pos_col = i
                             pos_col_mas = pos_col + 1
                             pos_col1 = i  - 1
@@ -415,7 +438,7 @@ def show_dateentry(num, win,lst_aux,Text_file, entry2, btn_windows, lbl_windows,
                                 rang1 = "Fecha inicial " + str(position)
                                 label_1 = customtkinter.CTkLabel(master=win.frame_info,
                                                                 text=rang1,
-                                                                text_font=("Roboto Medium", -16))  # font name and size in px
+                                                                text_font=("Roboto Medium", -16))
                                 label_1.grid(row=0, column=pos_col, pady=10, padx=10)
                                 button_1 = customtkinter.CTkButton(master=win.frame_info,
                                                                             text="Generar fecha inicial # {0}".format(position),
@@ -434,13 +457,12 @@ def show_dateentry(num, win,lst_aux,Text_file, entry2, btn_windows, lbl_windows,
                                 rang2 = "Fecha final " + str(position)
                                 label_2 = customtkinter.CTkLabel(master=win.frame_info,
                                                                 text=rang2,
-                                                                text_font=("Roboto Medium", -16))  # font name and size in px
+                                                                text_font=("Roboto Medium", -16))
                                 label_2.grid(row=2, column=pos_col1, pady=10, padx=10)
                                 button_2 = customtkinter.CTkButton(master=win.frame_info,
                                                                             text="Generar fecha final # {0}".format(position),
                                                                             command=partial(date_and_hour,win)(lst_aux[1].year, lst_aux[1].month, lst_aux[1].day, 23, 59, i, button_identities))
                                 button_2.grid(row=3, column=pos_col1, pady=10, padx=10)
-                                #contain.append(total_date)
                                 lbl_windows.append(label_2)
                                 btn_windows.append(button_2)
                                 button_identities.append(button_2)
@@ -498,7 +520,7 @@ def copy_txt(root,txt):
     root.clipboard_clear()
     root.clipboard_append(txt)
     tkinter.messagebox.showinfo(title="", message="El texto ha sido copiado")
-    
+
 #Retorna tiempo paciente está entre 70 y 140:
 #Verificar esta funcion
 def range_min_max(min, max, df0, subList, combobox_1, smallest):
@@ -539,16 +561,12 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
                         gluco_2 = hist[pos22]
                         time_2 = delta_range[pos2]
 
-                    print("tiempo BASE (PIVOTE) : " + str(delta_range[index]) + " Glucosa : " + str(hist[index]))
-                    print("tiempo 2 : " + str(time_2) + " Glucosa : " + str(gluco_2) )
-                    print(" \n")
                     if  hist[index] >= 140 :
                         point = 140
                     else:
                         point = 70
 
                     dif_shift_2 = slope(hist[index], delta_range[index], gluco_2,time_2, point, time_2,gluco_2)
-                    print(str(dif_shift_2[1]) + "\n")
 
                     if dif_shift_2[1] == True:
                         delta_range[pos2] = dif_shift_2[0]
@@ -569,16 +587,12 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
                         gluco_1 = hist[pos11]
                         time_1 = delta_range[pos1]
 
-                    print("tiempo 1 : " + str(time_1) + " Glucosa : " + str(gluco_1))
-                    print("tiempo BASE (PIVOTE) : " + str(delta_range[index]) + " Glucosa : " + str(hist[index]))
-                    print(" \n")
                     if  hist[index] >= 140 :
                         point = 140
                     else:
                         point = 70
 
                     dif_shift_1 = slope(gluco_1,time_1, hist[index], delta_range[index], point, time_1,gluco_1)
-                    print(str(dif_shift_1[1]) + "\n")
 
                     if dif_shift_1[1] == True:
                         delta_range[pos1] = dif_shift_1[0]
@@ -610,10 +624,6 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
                         time_2 = delta_range[pos2]
 
                     if  ( gluco_2 >= 70 or gluco_2 <= 140) and (gluco_1 >= 70 or gluco_1 <= 140) :
-                        print("tiempo 1 : " + str(time_1) + " Glucosa : " + str(gluco_1))
-                        print("tiempo BASE (PIVOTE) : " + str(delta_range[index]) + " Glucosa : " + str(hist[index]))
-                        print("tiempo 2 : " + str(time_2) + " Glucosa : " + str(gluco_2) )
-                        print(" \n")
                         if  hist[index] >= 140 :
                             point = 140
                         else:
@@ -621,8 +631,6 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
 
                         dif_shift_1 = slope(gluco_1,time_1, hist[index], delta_range[index], point, time_1,gluco_1)
                         dif_shift_2 = slope(hist[index], delta_range[index], gluco_2,time_2, point, time_2,gluco_2)
-                        print(str(dif_shift_1[1]) + "\n")
-                        print(str(dif_shift_2[1]) + "\n")
 
                         if dif_shift_1[1] == True:
                             delta_range[pos1] = dif_shift_1[0]
@@ -643,7 +651,7 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
         hist_140 = list(dfh['historial'].copy())
         delta_range_140 = list(dfh["Daytime"].copy())
         for index in range(len(hist_140)):
-            if pd.isna(hist_140[index]) == False and ( hist_140[index] >= 140 ) :
+            if pd.isna(hist_140[index]) == False and ( hist_140[index] > 140 ) :
                 #Primer elemento es mayor a 140 mg/dl
                 if first_element(hist_140, hist_140[index]) == True:
                     pos2 = 0
@@ -657,16 +665,12 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
                         gluco_2 = hist_140[pos22]
                         time_2 = delta_range_140[pos2]
 
-                    print("tiempo BASE (PIVOTE) : " + str(delta_range_140[index]) + " Glucosa : " + str(hist_140[index]))
-                    print("tiempo 2 : " + str(time_2) + " Glucosa : " + str(gluco_2) )
-                    print(" \n")
                     if  hist_140[index] >= 140 :
                         point = 140
                     else:
                         pass
 
                     dif_shift_2 = slope_140(hist_140[index], delta_range_140[index], gluco_2,time_2, point, time_2,gluco_2)
-                    print(str(dif_shift_2[1]) + "\n")
 
                     if dif_shift_2[2] ==True:
                         delta_dif2  = time_2 - dif_shift_2[0]
@@ -695,16 +699,12 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
                         gluco_1 = hist_140[pos11]
                         time_1 = delta_range_140[pos1]
 
-                    print("tiempo 1 : " + str(time_1) + " Glucosa : " + str(gluco_1))
-                    print("tiempo BASE (PIVOTE) : " + str(delta_range_140[index]) + " Glucosa : " + str(hist_140[index]))
-                    print(" \n")
                     if  hist_140[index] >= 140 :
                         point = 140
                     else:
                         pass
 
                     dif_shift_1 = slope_140(gluco_1,time_1, hist_140[index], delta_range_140[index], point, time_1,gluco_1)
-                    print(str(dif_shift_1[1]) + "\n")
 
                     if dif_shift_1[2] == True:
                         delta_dif = time_1 - dif_shift_1[0]
@@ -743,10 +743,6 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
                         time_2 = delta_range_140[pos2]
 
                     if  ( gluco_2 <= 140) or ( gluco_1 <= 140) :
-                        print("tiempo 1 : " + str(time_1) + " Glucosa : " + str(gluco_1))
-                        print("tiempo BASE (PIVOTE) : " + str(delta_range_140[index]) + " Glucosa : " + str(hist_140[index]))
-                        print("tiempo 2 : " + str(time_2) + " Glucosa : " + str(gluco_2) )
-                        print(" \n")
                         if  hist_140[index] >= 140 :
                             point = 140
                         else:
@@ -754,8 +750,6 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
 
                         dif_shift_1 = slope_140(gluco_1,time_1, hist_140[index], delta_range_140[index], point, time_1,gluco_1)
                         dif_shift_2 = slope_140(hist_140[index], delta_range_140[index], gluco_2,time_2, point, time_2,gluco_2)
-                        print(str(dif_shift_1[1]) + "\n")
-                        print(str(dif_shift_2[1]) + "\n")
 
                         if dif_shift_1[2] == True:
                             delta_dif = time_1 - dif_shift_1[0]
@@ -766,72 +760,41 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
                         else:
                             delta_dif2 = dif_shift_2[0]
 
-                        print(delta_dif)
-                        print(delta_dif2)
                         if dif_shift_1[1] == True:
                             lst_140.append(delta_dif)
                             delta_range_140[pos1] = dif_shift_1[0]
                             delta_range_140[index] = 0
                         else:
-                            delta_range_140[pos1] = 0
-                            delta_range_140[index] = 0
+                            if gluco_1 > 140:
+                                lst_140.append(time_1)
+                            else:
+                                delta_range_140[pos1] = 0
+                                delta_range_140[index] = 0
                         if dif_shift_2[1] == True:
                             lst_140.append(delta_dif2)
                             delta_range_140[pos2] = dif_shift_2[0]
                             delta_range_140[index] = 0
                         else:
-                            delta_range_140[pos2] = 0
-                            delta_range_140[index] = 0
+                            if gluco_2 > 140:
+                                lst_140.append(time_1)
+                            else:
+                                delta_range_140[pos2] = 0
+                                delta_range_140[index] = 0
                     else:
-                        print("tiempo 1 : " + str(time_1) + " Glucosa : " + str(gluco_1))
-                        print("tiempo BASE (PIVOTE) : " + str(delta_range_140[index]) + " Glucosa : " + str(hist_140[index]))
-                        print("tiempo 2 : " + str(time_2) + " Glucosa : " + str(gluco_2) )
-                        print(" \n")
-                        if  hist_140[index] >= 140 :
-                            point = 140
-                        else:
-                            pass
-
-                        dif_shift_1 = slope_140(gluco_1,time_1, hist_140[index], delta_range_140[index], point, time_1,gluco_1)
-                        dif_shift_2 = slope_140(hist_140[index], delta_range_140[index], gluco_2,time_2, point, time_2,gluco_2)
-                        print(str(dif_shift_1[1]) + "\n")
-                        print(str(dif_shift_2[1]) + "\n")
-
-                        if dif_shift_1[1] == True:
-                            delta_range_140[pos1] = dif_shift_1[0]
-                            delta_range_140[index] = 0
-                        else:
-                            lst_140.append(dif_shift_1[0])
-                            delta_range_140[pos1] = 0
-                            delta_range_140[index] = 0
-                        if dif_shift_2[1] == True:
-                            delta_range_140[pos2] = dif_shift_2[0]
-                            delta_range_140[index] = 0
-                        else:
-                            lst_140.append(dif_shift_2[0])
-                            delta_range_140[pos2] = 0
-                            delta_range_140[index] = 0
+                        lst_140.append(delta_range_140[index])
             else:
                 pass
-
         lst_140 = [0 if pd.isna(x) == True else x for x in lst_140]
 
         #Suma todas las diferencias de tiempos
         time_140_70 = delta_range
         time_140 = lst_140
         delta_time = sum(time_140_70)
+
         delta_time_max = sum(time_140)
         #Los segundos se transforman a días, horas, minutos y segundos
         Convertedformat = str(timedelta(seconds=delta_time))
         Convertedformat_max = str(timedelta(seconds=delta_time_max))
-        if "1day" in Convertedformat.replace(" ", ""):
-            format1 = Convertedformat.split(",")
-            Convertedformat = format1[1]
-        elif "1day" in  Convertedformat_max.replace(" ", ""):
-            format2 = Convertedformat.split(",")
-            Convertedformat_max = format2[1]
-        else:
-            pass
         #Se calula el area entre una constante y set de datos
         small_mean = smallest.mean()
         dlt_na_hs = dfh[dfh['historial'].notna()].copy()
@@ -923,7 +886,7 @@ def slope_140(y1,x1, y2, x2, point, x_sec,y_sec):
     delta = (x2 - x1)
     #delta = (x2 - x1).seconds
     if delta == 0:
-        delta = 1
+        delta = 0.1
     else:
         pass
     m = (y2 - y1) / delta
@@ -934,8 +897,8 @@ def slope_140(y1,x1, y2, x2, point, x_sec,y_sec):
         pass
     x_sol = (point - b)/m
     if  (x_sol > x_sec) :
-        val = x_sol - x_sec
-        x_sol = x_sec -val
+        val0 = x_sol - x_sec
+        x_sol = x_sec -val0
     else:
         pass
     if  y_sec <= 140:
@@ -943,16 +906,9 @@ def slope_140(y1,x1, y2, x2, point, x_sec,y_sec):
     else:
         flag = False
     if delta >= 0:
-        print("Pendiente Positiva")
         val = True
     else:
-        print("Pendiente Negativa")
         Val = False
-    print("Glucosa inicial {} Glucosa final {}".format(y1,y2))
-    print("Tiempo inicial {} Tiempo final {}".format(x1,x2))
-    print("Tiempo: ", x_sol)
-    print("Pendiente  : ", delta)
-    print("\n")
     return x_sol, flag, val
 
 #Se calcula la tiempo para 70 mg/dl < glucosa < 140 mg/dl
@@ -965,7 +921,7 @@ def slope(y1,x1, y2, x2, point, x_sec,y_sec):
     delta = (x2 - x1)
     #delta = (x2 - x1).seconds
     if delta == 0:
-        delta = 1
+        delta = 0.1
     else:
         pass
     m = (y2 - y1) / delta
@@ -985,16 +941,9 @@ def slope(y1,x1, y2, x2, point, x_sec,y_sec):
     else:
         flag = False
     if delta >= 0:
-        print("Pendiente Positiva")
         val = True
     else:
-        print("Pendiente Negativa")
         Val = False
-    print("Glucosa inicial {} Glucosa final {}".format(y1,y2))
-    print("Tiempo inicial {} Tiempo final {}".format(x1,x2))
-    print("Tiempo: ", x_sol)
-    print("Pendiente  : ", delta)
-    print("\n")
     return x_sol, flag
 
 #Se determina el primer elemento de una lista
@@ -1007,6 +956,7 @@ def first_element(urlist, val):
     return Flag
 #Esta funcion grafica los datos obtenidos
 def display_data3(file_name, contain, entry2, win, num, i_array,btn_dwn, lbl_disp, button_identities, n_array, combobox_1, lbl_cp):
+    contain = n_array
     size = len(contain)
     #Conservo los últimos size elementos
     i_array = i_array[-size:]
@@ -1040,20 +990,22 @@ def display_data3(file_name, contain, entry2, win, num, i_array,btn_dwn, lbl_dis
                   temp = element
                   times.append(temp)
             #Se convierten las fechas en formato datetime
+            in_time  = [datetime.strptime(element, '%m-%d-%Y %I:%M %p') for element in times]
+            #out_time  = [datetime.strptime(element, '%m-%d-%Y %H:%M') for element in in_time]
             times_datetime = pd.to_datetime(times, infer_datetime_format=True)
             #Determina si los elementos de la lista son distintos
-            value = np.unique(times_datetime).size == len(times_datetime)
+            value = np.unique(in_time).size == len(in_time)
             if value == True:
                 #Cada indice par se agrega una fecha inicial e impar para fecha final
                 for i in range(len(times_datetime)):
                     if (i % 2) == 0:
-                        t1 = datetime(times_datetime[i].year, times_datetime[i].month, times_datetime[i].day, 0, 0)
+                        t1 = datetime(times_datetime[i].year, times_datetime[i].month, times_datetime[i].day, times_datetime[i].hour, times_datetime[i].minute)
                         times_datetime_aux.append(t1)
                     else:
-                        t2 = datetime(times_datetime[i].year, times_datetime[i].month, times_datetime[i].day, 23, 59)
+                        t2 = datetime(times_datetime[i].year, times_datetime[i].month, times_datetime[i].day, times_datetime[i].hour, times_datetime[i].minute)
                         times_datetime_aux.append(t2)
                 #Fecha consecutiva es mayor a la fecha anterior
-                if greater(times_datetime_aux) == True:
+                if greater(in_time) == True:
                     #Corrobora que almenos una fecha exista
                     var = len(times_datetime_aux) - 1
                     date0 = lst[2]
@@ -1091,61 +1043,69 @@ def display_data3(file_name, contain, entry2, win, num, i_array,btn_dwn, lbl_dis
                         [aux_df.append(df[(df['dates'] >= subList[index][0]) & (df['dates'] <= subList[index][1]) & (df["Número de serie"].str.contains(combobox_1))]) for index in range(len(subList)) ]
                         #Se concatenan todos los valores filtrados
                         result = pd.concat(aux_df)
-                        #Creo una copia del filtro, para poder guardar en la computadora
-                        go_csv = result.copy()
-                        #Se calculan los 10 valores mas pequeños de la columna
-                        smallest = result['historial'].nsmallest(10)
-                        #Tiempos entre 70 y 140, y el tiempo por encima de 140
-                        sum_time = range_min_max(70, 140, result, subList, combobox_1, smallest)
-                        #area1 = area(aux_result, subList, combobox_1, smallest)
-                        #total_lst = sum_time[2] + area1[1]
-                        total_lst = sum_time
-                        total_display = '\n'.join(total_lst)
-                        #Calcula el promedio general
-                        df_mean = result['historial'].mean()
-                        #Chequear y cambiar nombres, pra conservar datos csv
-                        result['rolling_avg'] = result['historial'].rolling(10).mean()
-                        #Elimino los valores nulos
-                        result['rolling_avg'].dropna(inplace=True)
-                        #Los datos de la columna se convierten en números
-                        result['rolling_avg'] = result['rolling_avg'].apply(pd.to_numeric)
-                        #Rinicio los valores de las listas cada vez que presiono el botón de generar gráfico
-                        contain.clear()
-                        n_array.clear()
-                        i_array.clear()
-                        button_identities.clear()
-                        #Grafico los datos de acurdo al filtro
-                        plot = get_div(result['dates'], result['historial'], result['rolling_avg'], df_mean, entry2, result, smallest)
-                        dwn_image = dt.load_image(r"Dependencies\dwn.png", 20)
-                        button_12 = customtkinter.CTkButton(master=win.frame_right,
-                                                            image=dwn_image,
-                                                            text="Descargar datos",
-                                                            height=32,
-                                                            compound="right",
-                                                            command=lambda:dt.download_csv(go_csv))
-                        button_12.grid(row=7, column=0, columnspan=2, padx=20, pady=(20, 10), sticky="ew")
-                        btn_dwn.append(button_12)
-                        #Creo una etiqueta donde muestro información relevante
-                        label_info_1 = customtkinter.CTkLabel(master=win.frame_left,
-                                                                         text= total_display,
-                                                                         height=200,
-                                                                         corner_radius=6,  # <- custom corner radius
-                                                                         fg_color=("white", "gray38"),  # <- custom tuple-color
-                                                                         justify=tk.LEFT)
-                        label_info_1.grid(column=0, row=6,  columnspan=1, sticky="nwe", padx=15, pady=15)
+                        #Chequea que el filtro no esté vacio
+                        if len(result['dates']) != 0:
+                            #Creo una copia del filtro, para poder guardar en la computadora
+                            go_csv = result.copy()
+                            #Se calculan los 10 valores mas pequeños de la columna
+                            smallest = result['historial'].nsmallest(10)
+                            #Tiempos entre 70 y 140, y el tiempo por encima de 140
+                            sum_time = range_min_max(70, 140, result, subList, combobox_1, smallest)
+                            #area1 = area(aux_result, subList, combobox_1, smallest)
+                            #total_lst = sum_time[2] + area1[1]
+                            total_lst = sum_time
+                            total_display = '\n'.join(total_lst)
+                            #Calcula el promedio general
+                            df_mean = result['historial'].mean()
+                            #Chequear y cambiar nombres, pra conservar datos csv
+                            result['rolling_avg'] = result['historial'].rolling(10).mean()
+                            #Elimino los valores nulos
+                            result['rolling_avg'].dropna(inplace=True)
+                            #Los datos de la columna se convierten en números
+                            result['rolling_avg'] = result['rolling_avg'].apply(pd.to_numeric)
+                            #Rinicio los valores de las listas cada vez que presiono el botón de generar gráfico
+                            contain.clear()
+                            n_array.clear()
+                            i_array.clear()
+                            button_identities.clear()
+                            #Grafico los datos de acurdo al filtro
+                            plot = get_div(result['dates'], result['historial'], result['rolling_avg'], df_mean, entry2, result, smallest)
+                            dwn_image = dt.load_image(r"Dependencies\dwn.png", 20)
+                            button_12 = customtkinter.CTkButton(master=win.frame_right,
+                                                                image=dwn_image,
+                                                                text="Descargar datos",
+                                                                height=32,
+                                                                compound="right",
+                                                                command=lambda:dt.download_csv(go_csv))
+                            button_12.grid(row=7, column=0, columnspan=2, padx=20, pady=(20, 10), sticky="ew")
+                            btn_dwn.append(button_12)
+                            #Creo una etiqueta donde muestro información relevante
+                            label_info_1 = customtkinter.CTkLabel(master=win.frame_left,
+                                                                             text= total_display,
+                                                                             height=200,
+                                                                             corner_radius=6,  # <- custom corner radius
+                                                                             fg_color=("white", "gray38"),  # <- custom tuple-color
+                                                                             justify=tk.LEFT)
+                            label_info_1.grid(column=0, row=6,  columnspan=1, sticky="nwe", padx=15, pady=15)
 
-                        copy_image = dt.load_image(r"Dependencies\copia.png", 20)
-                        button_cp = customtkinter.CTkButton(master=win.frame_left,
-                                                            image=copy_image,
-                                                            text="",
-                                                            width =32,
-                                                            height=32,
-                                                            border_width=1,
-                                                            compound="left",
-                                                            command=lambda:copy_txt(win,total_display))
-                        button_cp.place(relx=0.05, rely=0.6, anchor='w')
-                        lbl_cp.append(button_cp)
-                        lbl_disp.append(label_info_1)
+                            copy_image = dt.load_image(r"Dependencies\copia.png", 20)
+                            button_cp = customtkinter.CTkButton(master=win.frame_left,
+                                                                image=copy_image,
+                                                                text="",
+                                                                width =32,
+                                                                height=32,
+                                                                border_width=1,
+                                                                compound="left",
+                                                                command=lambda:copy_txt(win,total_display))
+                            button_cp.place(relx=0.05, rely=0.6, anchor='w')
+                            lbl_cp.append(button_cp)
+                            lbl_disp.append(label_info_1)
+                        else:
+                            contain.clear()
+                            n_array.clear()
+                            i_array.clear()
+                            button_identities.clear()
+                            messagebox.showerror(message="No existe coincidencia entre el código del letor y las fechas ingresadas", title="Advertencia")
                     else:
                         n_array.clear()
                         i_array.clear()
