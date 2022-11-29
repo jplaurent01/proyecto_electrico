@@ -87,7 +87,7 @@ class App(customtkinter.CTk):
 
         self.frame_info.rowconfigure(0, weight=1)
         self.frame_info.columnconfigure(0, weight=1)
-        txt = "Información de contacto:\n" + "Correo : josepablo.laurent@gmail.com\n" + "Teléfono : 88060043"
+        txt = "Información de contacto:\n" + "Telegram : Jplaurent"
         self.label_info_1 = customtkinter.CTkLabel(master=self.frame_right,
                                                    text= txt ,
                                                    height=250,

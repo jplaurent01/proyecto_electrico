@@ -45,7 +45,7 @@ def win_disp(root):
 
     #Se procede a abrir el archivo csv
     buttons0 = []  # list to store the created buttons
-    filemenu.add_command(label="Abrir Archivo", command=lambda:Onadd(win, buttons0))
+    filemenu.add_command(label="Abrir archivo", command=lambda:Onadd(win, buttons0))
     #Se destruye ventana actual
     filemenu.add_command(label="Salir", command=win.destroy)
     menubar.add_cascade(label="Menu de opciones", menu=filemenu)
@@ -134,7 +134,7 @@ def Onadd(win, buttons0):
         except:
             messagebox.showerror(message="Archivo no soportado", title="Advertencia")
     else :
-        messagebox.showerror(message="No se seleccionó Archivo", title="Advertencia")
+        messagebox.showerror(message="No se seleccionó un archivo", title="Advertencia")
         win.destroy()
 
 #Determina que la fecha inicial sea menor a la fecha final
@@ -519,7 +519,7 @@ def getname_file(file_name):
 def copy_txt(root,txt):
     root.clipboard_clear()
     root.clipboard_append(txt)
-    tkinter.messagebox.showinfo(title="", message="El texto ha sido copiado")
+    messagebox.showinfo(title="", message="El texto ha sido copiado")
 
 #Retorna tiempo paciente está entre 70 y 140:
 #Verificar esta funcion
@@ -531,6 +531,7 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
         lst_140 = []
         #Se filtran los datos que estan dentro del rango de fechas
         dfh = df[((df['dates'] >= subList[i][0]) & (df['dates'] <= subList[i][1]) & (df["Número de serie"].str.contains(combobox_1)))]
+        #dfh = dfh.dropna(subset=['historial'])
         # Se convierte la columna a elementos de tiempo
         dfh['dates'] = pd.to_datetime(dfh['dates'])
         # cambia las fechas hacia arriba y en una nueva columna
@@ -538,43 +539,62 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
         #calcular la diferencia
         dfh['time_diff'] = (dfh['dates_shift'] - dfh['dates']) / pd.Timedelta(seconds=1)
         # eliminar la columna temporal
-        del dfh['dates_shift']
+        #del dfh['dates_shift']
         #Para segundos mayores a 86400, es decir un día, no se tomara en cuenta dicho tiempo
         dfh["Daytime"] = dfh['time_diff']
         dfh.loc[dfh['time_diff']>=86400, 'Daytime'] = 0
-
+        """
+        with pd.option_context('display.max_rows', None,
+                          'display.max_columns', None,
+                           'display.precision', 3,
+                           ):
+                           print(dfh)
+        """
         #Se calcula el tiempo entre 70 y 140 mg/dl
+        #Se crean listas a partir de las Series de DataFrame
         hist = list(dfh['historial'].copy())
         delta_range = list(dfh["Daytime"].copy())
+        cp_dates = list(dfh["dates"].copy())
+
+        #Basicamente las tres listas tienen la misma extension
         for index in range(len(hist)):
+            #El valor del historial ctual de acuerdo con el indice index debe ser menor y mayor a 140
             if pd.isna(hist[index]) == False and ( hist[index] < 70 or hist[index] > 140 ) :
                 #Escenario donde el primer elemento de la lista es menor o mayor al rango
                 if first_element(hist, hist[index]) == True:
                     pos2 = 0
+                    #Si no hay resultados nulos en la columna historial
                     if pd.isna(hist[index + 1]) == False:
                         pos2 = index + 1
                         gluco_2 = hist[pos2]
                         time_2 = delta_range[pos2]
+                    #Si hay resultados nulos en la columna historial
                     else:
                         pos22 = index + 2
                         pos2 = index + 1
                         gluco_2 = hist[pos22]
                         time_2 = delta_range[pos2]
-
+                    #Se determina el valor point, para el posterior calculo del tiempo atraves de la pendiente
                     if  hist[index] >= 140 :
                         point = 140
                     else:
                         point = 70
-
-                    dif_shift_2 = slope(hist[index], delta_range[index], gluco_2,time_2, point, time_2,gluco_2)
-
-                    if dif_shift_2[1] == True:
-                        delta_range[pos2] = dif_shift_2[0]
-                        delta_range[index] = 0
+                    #Se obtiene por medio de la pendtiene
+                    dif_shift_2 = slope(hist[index],gluco_2,delta_range[index ], point, cp_dates[index+1], gluco_2)
+                    #En este caso se otienen dos fechas y se obtiene la cantidad de segundos de la resta
+                    if dif_shift_2[2] == True:
+                        solv_time_2 = (cp_dates[index + 1] - datetime.fromtimestamp(dif_shift_2[0])).total_seconds()
+                    #En este caso se obtien directamente los segundos
                     else:
-                        delta_range[pos2] = 0
+                        solv_time_2 = dif_shift_2[0]
+                    #Si la solución está dentro del rango de 70 y 140 se agrega el tiempo a la lista de tiempos
+                    if dif_shift_2[1] == True:
+                        delta_range[index] = solv_time_2
+                    #En caso de que la solucion no este dentro del rango se agrega un cero a la lista de tiempos
+                    else:
                         delta_range[index] = 0
                 #Escenario donde el último elemento de la lista es menor o mayor al rango
+                #Explicación es la misma que la del if anterior
                 elif last_element(hist, hist[index]) == True:
                     pos1 = 0
                     if pd.isna(hist[index - 1]) == False:
@@ -592,18 +612,23 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
                     else:
                         point = 70
 
-                    dif_shift_1 = slope(gluco_1,time_1, hist[index], delta_range[index], point, time_1,gluco_1)
+                    dif_shift_1 = slope(gluco_1,hist[index],delta_range[index-1], point, cp_dates[index-1], gluco_1)
+
+                    if dif_shift_1[2] == True:
+                        solv_time_1 = (datetime.fromtimestamp(dif_shift_1[0]) - cp_dates[index-1]).total_seconds()
+                    else:
+                        solv_time_1 = dif_shift_1[0]
 
                     if dif_shift_1[1] == True:
-                        delta_range[pos1] = dif_shift_1[0]
-                        delta_range[index] = 0
+                        delta_range[pos1] = solv_time_1
                     else:
                         delta_range[pos1] = 0
-                        delta_range[index] = 0
+
                 #Caso donde un valor pivote se encuentra rodeado de un valor inferior o mayor al rango
                 else:
                     pos1 = 0
                     pos2 = 0
+                    #Se chequea si el elemento de la lista no es un valor nulo, en caso de serlo se salta al siguiete elemento
                     if pd.isna(hist[index - 1]) == False:
                         pos1 = index - 1
                         gluco_1 = hist[pos1]
@@ -622,34 +647,49 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
                         pos2 = index + 1
                         gluco_2 = hist[pos22]
                         time_2 = delta_range[pos2]
-
+                    #Entraan los resultados mayores o menores a 70 y 140 para los valores mayores y menores del indice index
                     if  ( gluco_2 >= 70 or gluco_2 <= 140) and (gluco_1 >= 70 or gluco_1 <= 140) :
+                        #Se determina el valor de point para el fututo calculo del tiempo por la pendiente
                         if  hist[index] >= 140 :
                             point = 140
                         else:
                             point = 70
-
-                        dif_shift_1 = slope(gluco_1,time_1, hist[index], delta_range[index], point, time_1,gluco_1)
-                        dif_shift_2 = slope(hist[index], delta_range[index], gluco_2,time_2, point, time_2,gluco_2)
-
+                        #Estas funciones determinan los tiempos por medio de la pendiente
+                        dif_shift_1 = slope(gluco_1,hist[index],delta_range[index-1], point, cp_dates[index-1], gluco_1)
+                        dif_shift_2 = slope(hist[index],gluco_2,delta_range[index ], point, cp_dates[index+1], gluco_2)
+                        #Se reciben deos fechas y se restan y se obtienen los segundos
+                        if dif_shift_1[2] == True:
+                            solv_time_1 = (datetime.fromtimestamp(dif_shift_1[0]) - cp_dates[index-1]).total_seconds()
+                        #Se obtienen solo los segundos
+                        else:
+                            solv_time_1 = dif_shift_1[0]
+                        #Se reciben deos fechas y se restan y se obtienen los segundos
+                        if dif_shift_2[2] == True:
+                            solv_time_2 = (cp_dates[index + 1] - datetime.fromtimestamp(dif_shift_2[0])).total_seconds()
+                        #Se obtienen solo los segundos
+                        else:
+                            solv_time_2 = dif_shift_2[0]
+                        #Se agrega el tiempo por pendiente en la lista
                         if dif_shift_1[1] == True:
-                            delta_range[pos1] = dif_shift_1[0]
-                            delta_range[index] = 0
+                            delta_range[pos1] = solv_time_1
+                        #Se agrega un cero cuando el valor del histroia esta por fuera de 70 o 180
                         else:
                             delta_range[pos1] = 0
-                            delta_range[index] = 0
+                        #Se agrega el tiempo por pendiente en la lista
                         if dif_shift_2[1] == True:
-                            delta_range[pos2] = dif_shift_2[0]
-                            delta_range[index] = 0
+                            delta_range[index] = solv_time_2
+                        #Se agrega un cero cuando el valor del histroia esta por fuera de 70 o 180
                         else:
-                            delta_range[pos2] = 0
                             delta_range[index] = 0
+
         #Se eliminan los elemntos que no tienen valor
         delta_range = [0 if pd.isna(x) == True else x for x in delta_range]
-
         #Se calcula el tiempo arriba de 140 mg/dl
         hist_140 = list(dfh['historial'].copy())
         delta_range_140 = list(dfh["Daytime"].copy())
+        cp_dates_140 = list(dfh["dates"].copy())
+        #Aqui se calcula el tiempo por encima de 140
+        #El codigo es el mismo que el del calculo del tiempo entre 70 y 140
         for index in range(len(hist_140)):
             if pd.isna(hist_140[index]) == False and ( hist_140[index] > 140 ) :
                 #Primer elemento es mayor a 140 mg/dl
@@ -670,21 +710,19 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
                     else:
                         pass
 
-                    dif_shift_2 = slope_140(hist_140[index], delta_range_140[index], gluco_2,time_2, point, time_2,gluco_2)
+                    dif_shift_2 = slope_140(hist_140[index],gluco_2,delta_range_140[index ], point, cp_dates_140[index+1], gluco_2)
 
-                    if dif_shift_2[2] ==True:
-                        delta_dif2  = time_2 - dif_shift_2[0]
+                    if dif_shift_2[2] == True:
+                        solv_time_2 = (cp_dates[index + 1] - datetime.fromtimestamp(dif_shift_2[0])).total_seconds()
                     else:
-                        delta_dif2 = dif_shift_2[0]
+                        solv_time_2 = dif_shift_2[0]
 
                     if dif_shift_2[1] == True:
-                        lst_140.append(delta_dif2)
-                        delta_range_140[pos2] = dif_shift_2[0]
-                        delta_range_140[index] = 0
+                        str3 = str(solv_time_2) +","+ str(hist_140[index]) +"-"+ str(gluco_2) + "-" +  str(index) + str(pos2)
+                        lst_140.append(str3)
                     else:
-                        lst_140.append(delta_dif2)
-                        delta_range_140[pos2] = 0
-                        delta_range_140[index] = 0
+                        str4 = str(time_2) +","+ str(hist_140[index]) +"-"+ str(gluco_2) + "-"+ str(index) + str(pos2)
+                        lst_140.append(str4)
 
                 #Ultimo elemento es mayor a 140 mg/dl
                 elif last_element(hist_140, hist_140[index]) == True:
@@ -704,21 +742,19 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
                     else:
                         pass
 
-                    dif_shift_1 = slope_140(gluco_1,time_1, hist_140[index], delta_range_140[index], point, time_1,gluco_1)
-
+                    dif_shift_1 = slope_140(gluco_1,hist_140[index],delta_range_140[index-1], point, cp_dates_140[index-1], gluco_1)
                     if dif_shift_1[2] == True:
-                        delta_dif = time_1 - dif_shift_1[0]
+                        solv_time_1 = (datetime.fromtimestamp(dif_shift_1[0]) - cp_dates[index-1]).total_seconds()
                     else:
-                        delta_dif = dif_shift_1[0]
+                        solv_time_1 = dif_shift_1[0]
 
                     if dif_shift_1[1] == True:
-                        lst_140.append(delta_dif)
-                        delta_range_140[pos1] = dif_shift_1[0]
-                        delta_range_140[index] = 0
+                        str1 = str(solv_time_1) +","+ str(gluco_1) + "-" + str(hist_140[index]) + "-" + str(pos1) + str(index)
+                        lst_140.append(str1)
                     else:
-                        lst_140.append(delta_dif)
-                        delta_range_140[pos1] = 0
-                        delta_range_140[index] = 0
+                        str2 = str(time_1) +","+ str(gluco_1) + "-" + str(hist_140[index]) + "-" + str(pos1) + str(index)
+                        lst_140.append(str2)
+
                 #Caso donde un valor pivote se encuentra rodeado de un valor inferior o mayor al rango
                 else:
                     pos1 = 0
@@ -748,53 +784,63 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
                         else:
                             pass
 
-                        dif_shift_1 = slope_140(gluco_1,time_1, hist_140[index], delta_range_140[index], point, time_1,gluco_1)
-                        dif_shift_2 = slope_140(hist_140[index], delta_range_140[index], gluco_2,time_2, point, time_2,gluco_2)
+                        dif_shift_1 = slope_140(gluco_1,hist_140[index],delta_range_140[index-1], point, cp_dates_140[index-1], gluco_1)
+                        dif_shift_2 = slope_140(hist_140[index],gluco_2,delta_range_140[index ], point, cp_dates_140[index+1], gluco_2)
 
                         if dif_shift_1[2] == True:
-                            delta_dif = time_1 - dif_shift_1[0]
+                            solv_aux1 = (datetime.fromtimestamp(dif_shift_1[0]) - cp_dates[index-1]).total_seconds()
+                            solv_time_1 = delta_range_140[index-1] - solv_aux1
                         else:
-                            delta_dif = dif_shift_1[0]
-                        if dif_shift_2[2] ==True:
-                            delta_dif2  = time_2 - dif_shift_2[0]
+                            solv_time_1 = dif_shift_1[0]
+
+                        if dif_shift_2[2] == True:
+                            solv_aux2 = (cp_dates[index + 1] - datetime.fromtimestamp(dif_shift_2[0])).total_seconds()
+                            solv_time_2 = delta_range_140[index ] - solv_aux2
                         else:
-                            delta_dif2 = dif_shift_2[0]
+                            solv_time_2 = dif_shift_2[0]
 
                         if dif_shift_1[1] == True:
-                            lst_140.append(delta_dif)
-                            delta_range_140[pos1] = dif_shift_1[0]
-                            delta_range_140[index] = 0
+                            str1 = str(solv_time_1) +","+ str(gluco_1) + "-" + str(hist_140[index]) + "-" + str(pos1) + str(index)
+                            lst_140.append(str1)
                         else:
-                            if gluco_1 > 140:
-                                lst_140.append(time_1)
-                            else:
-                                delta_range_140[pos1] = 0
-                                delta_range_140[index] = 0
+                            str2 = str(time_1) +","+ str(gluco_1) + "-" + str(hist_140[index]) + "-" + str(pos1) + str(index)
+                            lst_140.append(str2)
+
                         if dif_shift_2[1] == True:
-                            lst_140.append(delta_dif2)
-                            delta_range_140[pos2] = dif_shift_2[0]
-                            delta_range_140[index] = 0
+                            str3 = str(solv_time_2) +","+ str(hist_140[index]) +"-"+ str(gluco_2) + "-" +  str(index) + str(pos2)
+                            lst_140.append(str3)
                         else:
-                            if gluco_2 > 140:
-                                lst_140.append(time_1)
-                            else:
-                                delta_range_140[pos2] = 0
-                                delta_range_140[index] = 0
+                            str4 = str(time_2) +","+ str(hist_140[index]) +"-"+ str(gluco_2) + "-"+ str(index) + str(pos2)
+                            lst_140.append(str4)
                     else:
-                        lst_140.append(delta_range_140[index])
+                        pass
             else:
                 pass
-        lst_140 = [0 if pd.isna(x) == True else x for x in lst_140]
 
+        lst_140 = [0 if pd.isna(x) == True else x for x in lst_140]
+        #Se eliminan los elementos repetidos del la lista
+        lst_140 = list(set(lst_140))
+        #Se separa el texto de los numeros
+        lst_140 =[i.split(',', 1)[0] for i in lst_140]
+        #Convierte de string a float
+        lst_140 = np.float_(lst_140)
         #Suma todas las diferencias de tiempos
         time_140_70 = delta_range
         time_140 = lst_140
+        #Se suman todos los segundos de la lista
         delta_time = sum(time_140_70)
-
+        #Se determina el tiempo total
+        total_time = dfh['dates'].max() - dfh['dates'].min()
+        #Se suman todos los segundos de la lista
         delta_time_max = sum(time_140)
         #Los segundos se transforman a días, horas, minutos y segundos
-        Convertedformat = str(timedelta(seconds=delta_time))
-        Convertedformat_max = str(timedelta(seconds=delta_time_max))
+        Convertedformat = timedelta(seconds=delta_time)
+        Convertedformat_max = timedelta(seconds=delta_time_max)
+        #Porcentaje entre 70 y 140
+        por_70_140 = (Convertedformat/total_time)*100
+        #Porcentaje sobre 140
+        por_140 = (Convertedformat_max/total_time)*100
+
         #Se calula el area entre una constante y set de datos
         small_mean = smallest.mean()
         dlt_na_hs = dfh[dfh['historial'].notna()].copy()
@@ -806,7 +852,7 @@ def range_min_max(min, max, df0, subList, combobox_1, smallest):
         posArea = str(round(np.trapz(posPart),0))
 
         position = i + 1
-        string = "Rango #{0} del ".format(position) + str(dfh["dates"].min()) + " al "+ str(dfh["dates"].max()) +" :\n"+ " ( 70 - 140 ) [ mg/dL ] : " + Convertedformat.split('.')[0] + "\n" + " ( > 140 ) [ mg/dL ] : " + Convertedformat_max.split('.')[0] + "\n" + " Área : " + posArea
+        string = "Rango #{0} del ".format(position) + str(dfh["dates"].min()) + " al "+ str(dfh["dates"].max()) + " : \n" + "Tiempo total: "+ str(total_time) +" (100 %) \n" + " ( 70 - 140 ) [ mg/dL ] : " + str(Convertedformat).split('.')[0] +" (" + str(round(por_70_140, 2)) +" %)\n" + " ( > 140 ) [ mg/dL ] : " + str(Convertedformat_max).split('.')[0] +" (" + str(round(por_140, 2)) + " %)\n" + " Área : " + posArea
         aux_str.append(string)
     #Retorna una lista con los tiempos totales y area bajo la curva y la constante
     return aux_str
@@ -827,7 +873,7 @@ def get_div(plot_x, plot_y, rolling_avg, df_mean, entry2, df0, smallest):
     go.Scatter(x = plot_x, y = smallest_array, mode = 'lines', name = 'Promedio de los 10 menores valores de glucosa',),
     ])
 
-    text0 = entry2 + " Registros de datos históricos de glucosa y escaneo de glucosa"
+    text0 = entry2 + " registros de datos históricos de glucosa y escaneo de glucosa"
     plot.update_layout(
     title={
         'text': text0,
@@ -835,7 +881,7 @@ def get_div(plot_x, plot_y, rolling_avg, df_mean, entry2, df0, smallest):
         'x':0.5,
         'xanchor': 'center',
         'yanchor': 'top'},
-    xaxis_title="Tiempo [min]",
+    xaxis_title="Tiempo ",
     yaxis_title="Glucosa [mg/dL]",
     legend_title="Datos",
     font=dict(
@@ -876,75 +922,90 @@ def last_element(urlist, val):
             Flag = True
     return Flag
 
-#Se calcula la tiempo para glucosa > 140 mg/dl
-def slope_140(y1,x1, y2, x2, point, x_sec,y_sec):
-    x_sol = 0
-    flag = True
-    val = True
-    x1 = x1
-    x2 = x2
-    delta = (x2 - x1)
-    #delta = (x2 - x1).seconds
-    if delta == 0:
-        delta = 0.1
-    else:
-        pass
-    m = (y2 - y1) / delta
-    b = y_sec - m*x_sec
-    if m == 0:
-        m = 1
-    else:
-        pass
-    x_sol = (point - b)/m
-    if  (x_sol > x_sec) :
-        val0 = x_sol - x_sec
-        x_sol = x_sec -val0
-    else:
-        pass
-    if  y_sec <= 140:
-        flag = True
-    else:
-        flag = False
-    if delta >= 0:
-        val = True
-    else:
-        Val = False
-    return x_sol, flag, val
-
 #Se calcula la tiempo para 70 mg/dl < glucosa < 140 mg/dl
-def slope(y1,x1, y2, x2, point, x_sec,y_sec):
+def slope(y1,y2,delta_time, point, time_sec,y_sec):
     x_sol = 0
+    delta = delta_time
+    #Variables de control
     flag = True
-    val = True
-    x1 = x1
-    x2 = x2
-    delta = (x2 - x1)
-    #delta = (x2 - x1).seconds
-    if delta == 0:
-        delta = 0.1
-    else:
-        pass
-    m = (y2 - y1) / delta
-    b = y_sec - m*x_sec
-    if m == 0:
-        m = 1
-    else:
-        pass
-    x_sol = (point - b)/m
-    if  (x_sol > x_sec) :
-        val = x_sol - x_sec
-        x_sol = x_sec -val
-    else:
-        pass
+    control = True
+
+    #Si el historial de la glucosa es verdadero se suma el valor de tiempo calculado
+    #por la pendiente, caso contrario se agrega un cero  de la lista de tiempos.
     if 70 <= y_sec <= 140:
         flag = True
     else:
         flag = False
-    if delta >= 0:
-        val = True
+
+    #Cunado la diferencia deltiempo en el denominador es distinta de cero
+    if delta_time !=0:
+        #Se convierte la fecha ingresada a segundos
+        time_sec = time.mktime(time_sec.timetuple())
+        m = (y2 - y1) / delta
+        #Cuando la la pendiente es cero significa que tenmos de valores de glucosa iguales
+        #Por tal motivo se sumará el tiempo obtenido sin calcular la pendiente, si y solo si
+        #los datos están entre 70 y  140.
+        if m == 0:
+            x_sol = y_sec
+            control = False
+            return x_sol, flag, control
+
+        #Se se calcula el tiempo por medio de la pendiente.
+        else:
+            control = True
+            b = y_sec - m*time_sec
+            x_sol = (point - b)/m
+            return x_sol, flag, control
+
+#Cunado la diferencia del tiempo en el denominador es  de cero
+#Se sumará un cero si flag es True caso contrario se ignora el cero.
     else:
-        Val = False
-    return x_sol, flag
+        control = False
+        x_sol = 0
+        return x_sol, flag, control
+
+#Se calcula la tiempo para glucosa > 140 mg/dl
+def slope_140(y1,y2,delta_time, point, time_sec,y_sec):
+    x_sol = 0
+    delta = delta_time
+    #Variables de control
+    flag = True
+    val = True
+    control = True
+
+    #Si el historial de la glucosa es verdadero se suma el valor de tiempo calculado
+    #por la pendiente, caso contrario se suma el tiempo  de la lista de tiempos.
+    if  y_sec <= 140:
+        flag = True
+    else:
+        flag = False
+
+    #Cunado la diferencia deltiempo en el denominador es distinta de cero
+    if delta_time !=0:
+        #Se convierte la fecha ingresada a segundos
+        time_sec = time.mktime(time_sec.timetuple())
+        m = (y2 - y1) / delta
+        #Cuando la la pendiente es cero significa que tenmos de valores de glucosa iguales
+        #Por tal motivo se sumará el tiempo obtenido sin calcular la pendiente, si y solo si
+        #los datos son mayores a 140.
+        if m == 0:
+            x_sol = y_sec
+            control = False
+            return x_sol, flag, control
+
+        #Se se calcula el tiempo por medio de la pendiente.
+        else:
+            control = True
+            b = y_sec - m*time_sec
+            x_sol = (point - b)/m
+            return x_sol, flag, control
+
+#Cunado la diferencia del tiempo en el denominador es  de cero
+#Se sumará un cero si flag es True caso contrario se ignora el cero.
+    else:
+        control = False
+        x_sol = 0
+        return x_sol, flag, control
 
 #Se determina el primer elemento de una lista
 def first_element(urlist, val):
@@ -954,6 +1015,7 @@ def first_element(urlist, val):
         if index == urlist_len and val == urlist[index]:
             Flag = True
     return Flag
+
 #Esta funcion grafica los datos obtenidos
 def display_data3(file_name, contain, entry2, win, num, i_array,btn_dwn, lbl_disp, button_identities, n_array, combobox_1, lbl_cp):
     contain = n_array
@@ -1043,6 +1105,8 @@ def display_data3(file_name, contain, entry2, win, num, i_array,btn_dwn, lbl_dis
                         [aux_df.append(df[(df['dates'] >= subList[index][0]) & (df['dates'] <= subList[index][1]) & (df["Número de serie"].str.contains(combobox_1))]) for index in range(len(subList)) ]
                         #Se concatenan todos los valores filtrados
                         result = pd.concat(aux_df)
+                        #Se eliminan los resultados nulos de la columna historial
+                        result = result.dropna(subset=['historial'])
                         #Chequea que el filtro no esté vacio
                         if len(result['dates']) != 0:
                             #Creo una copia del filtro, para poder guardar en la computadora
