@@ -1,0 +1,12 @@
+Pegar esto en la terminal donde se corre el archivo:
+"C:\Users\Administrador\AppData\Local\Programs\Python\Python310\Lib\site-packages\customtkinter;customtkinter/"
+pyinstaller --noconfirm --onefile --windowed --add-data "C:\Users\Administrador\AppData\Local\Programs\Python\Python310\Lib\site-packages\customtkinter;customtkinter/"  "main.py"
+Creado el exe, agregar en el archivo main.spec, lo siguiente en la linea 12:
+    hiddenimports=["babel.numbers"]
+Lugo correr en terminal:
+pyinstaller main.spec
+Se crea archivo sin terminal
+Para agregar terminal, poner en main.spec
+    console=True
+De nuevo correr:
+    pyinstaller main.spec
